@@ -1,0 +1,1 @@
+# azurerm-diagnostic-setting
