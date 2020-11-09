@@ -1,26 +1,107 @@
-resource "azurerm_monitor_diagnostic_setting" "diagsetting" {
-  name               = var.target_resource_name
-  target_resource_id = var.target_resource_id
-  storage_account_id = data.azurerm_storage_account.storage_account.id
+# toggles on/off auditing and advanced threat protection policy for sql server
+locals {
+    if_threat_detection_policy_enabled = var.enable_threat_detection_policy ? [{}] : []                
+}
 
-  dynamic "log" {
-    for_each = keys(var.ds_log_api_endpoints)
-    content {
-      category = log.value
-      enabled  = true
+# creates random password for admin account
+resource "random_password" "admin" {
+  count       = (var.create_mode == "Default" ? 1 : 0)
+  length      = 24
+  special     = true
+}
 
-      retention_policy {
-        enabled = true
-        days    = lookup(var.ds_log_api_endpoints, log.value, 0)
+resource "azurerm_mysql_server" "instance" {
+  name                = "${var.names.product_name}-${var.names.environment}-mysql${var.server_id}"
+  location            = var.location
+  resource_group_name = var.resource_group_name
+  tags = var.tags
+
+  administrator_login          = (var.create_mode == "Default" ? var.administrator_login : null)
+  administrator_login_password = (var.create_mode == "Default" ? random_password.admin[0].result : null)
+
+  sku_name   = var.sku_name
+  storage_mb = var.storage_mb
+  version    = var.mysql_version
+
+  auto_grow_enabled                 = (var.create_mode == "Replica" ? true : var.auto_grow_enabled)
+  backup_retention_days             = var.backup_retention_days
+  geo_redundant_backup_enabled      = var.geo_redundant_backup_enabled
+  infrastructure_encryption_enabled = var.infrastructure_encryption_enabled
+  public_network_access_enabled     = (((length(var.service_endpoints) > 0) || (length(var.access_list) > 0)) ? true : false)
+  ssl_enforcement_enabled           = true
+  ssl_minimal_tls_version_enforced  = "TLS1_2"
+
+  create_mode                       = var.create_mode
+  creation_source_server_id         = (var.create_mode == "Replica" ? var.creation_source_server_id : null)
+
+  dynamic "threat_detection_policy" {
+      for_each = local.if_threat_detection_policy_enabled
+      content {
+          storage_endpoint           = var.storage_endpoint
+          storage_account_access_key = var.storage_account_access_key 
+          retention_days             = var.log_retention_days
       }
-    }
   }
 
-  metric {
-    category = var.metric_category
-    retention_policy {
-      enabled = true
-      days    = var.ds_allmetrics_rentention_days
-    }
-  }
+}
+
+# Diagnostic setting
+module "ds_mysql_server" {
+  source                          = "git@github.com:openrba/terraform-azurerm-monitor-diagnostic-setting.git"
+  storage_account                 = var.storage_endpoint
+  sa_resource_group               = var.storage_account_resource_group
+  target_resource_id              = azurerm_mysql_server.instance.id
+  target_resource_name            = azurerm_mysql_server.instance.resource_group_name
+  ds_log_api_endpoints            = {"MySqlSlowLogs" = var.mysqlslowlogs, "MySqlAuditLogs" = var.mysqlauditlogs}
+  ds_allmetrics_rentention_days   = var.ds_allmetrics_rentention_days
+}
+
+# MySQL Database within a MySQL Server
+resource "azurerm_mysql_database" "db" {
+  for_each            = local.databases
+  name                = each.key
+  resource_group_name = var.resource_group_name
+  server_name         = azurerm_mysql_server.instance.name
+  charset             = each.value.charset
+  collation           = each.value.collation
+}
+
+# Sets MySQL Configuration values on a MySQL Server.
+resource "azurerm_mysql_configuration" "config" {
+  for_each            = local.mysql_config
+  name                = each.key
+  resource_group_name = var.resource_group_name
+  server_name         = azurerm_mysql_server.instance.name
+  value               = each.value
+}
+
+data "azurerm_client_config" "current" {}
+
+# Adding AD Admin to MySQL Server - Default is "false"
+resource "azurerm_mysql_active_directory_administrator" "ad_admin" {
+  count               = var.enable_mysql_ad_admin ? 1 : 0
+  server_name         = azurerm_mysql_server.instance.name
+  resource_group_name = var.resource_group_name
+  login               = var.ad_admin_login_name 
+  tenant_id           = data.azurerm_client_config.current.tenant_id
+  object_id           = data.azurerm_client_config.current.object_id
+}
+
+#MySQL Service Endpoints 
+resource "azurerm_mysql_virtual_network_rule" "service_endpoint" {
+  for_each            = var.service_endpoints
+  name                = each.key
+  resource_group_name = var.resource_group_name
+  server_name         = azurerm_mysql_server.instance.name
+  subnet_id           = each.value
+}
+
+#MySQL Access List
+resource "azurerm_mysql_firewall_rule" "access_list" {
+  for_each            = var.access_list
+  name                = each.key
+  resource_group_name = var.resource_group_name
+  server_name         = azurerm_mysql_server.instance.name
+  start_ip_address    = each.value.start_ip_address
+  end_ip_address      = each.value.end_ip_address
 }
