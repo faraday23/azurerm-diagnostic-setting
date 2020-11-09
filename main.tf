@@ -47,7 +47,7 @@ resource "azurerm_mysql_server" "instance" {
 
 # Diagnostic setting
 module "ds_mysql_server" {
-  source                          = "git@github.com:openrba/terraform-azurerm-monitor-diagnostic-setting.git"
+  source                          = "github.com/faraday23/terraform-azurerm-monitor-diagnostic-setting.git"
   storage_account                 = var.storage_endpoint
   sa_resource_group               = var.storage_account_resource_group
   target_resource_id              = azurerm_mysql_server.instance.id
