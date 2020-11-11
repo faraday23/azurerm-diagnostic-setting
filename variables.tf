@@ -51,6 +51,12 @@ variable "administrator_login" {
   default     = "az_dbadmin"
 }
 
+variable "administrator_password" {
+  type        = string
+  description = "Database administrator login name (leave blank to generate random string)"
+  default     = ""
+}
+
 variable "create_mode" {
     description = "Can be used to restore or replicate existing servers. Possible values are Default, Replica, GeoRestore, and PointInTimeRestore. Defaults to Default"
     type        = string
@@ -112,6 +118,29 @@ variable "ad_admin_login_name" {
   default     = ""
 }
 
+variable "storage_account_resource_group" {
+    description = "Azure resource group where the storage account resides."
+    type        = string
+}
+
+variable "mysqlslowlogs" {
+    description = "mySqlSlowLogs retention days"
+    type        = number
+    default     = 0
+}
+
+variable "mysqlauditlogs" {
+    description = "mySqlAuditLogs retention days"
+    type        = number
+    default     = 0
+}
+
+variable "ds_allmetrics_rentention_days" {
+    description = "All metrics retention days"
+    type        = number
+    default     = 0
+}
+
 ##
 # Optional Parameters
 ##
@@ -144,30 +173,6 @@ variable "storage_account_access_key" {
     description = "Specifies the identifier key of the Threat Detection audit storage account. Required if state is Enabled."
     type        = string
     default     = ""
-}
-
-variable "storage_account_resource_group" {
-    description = "Azure resource group where the storage account resides."
-    type        = string
-    default     = ""
-}
-
-variable "mysqlslowlogs" {
-    description = "mySqlSlowLogs retention days"
-    type        = number
-    default     = 0
-}
-
-variable "mysqlauditlogs" {
-    description = "mySqlAuditLogs retention days"
-    type        = number
-    default     = 0
-}
-
-variable "ds_allmetrics_rentention_days" {
-    description = "All metrics retention days"
-    type        = number
-    default     = 0
 }
 
 ##
