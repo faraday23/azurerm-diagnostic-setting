@@ -14,6 +14,7 @@ resource "random_password" "admin" {
   count       = local.create_password
   length      = 24
   special     = true
+  override_special = "!@#$%^&*"
 }
 
 resource "azurerm_mysql_server" "instance" {
@@ -52,13 +53,16 @@ resource "azurerm_mysql_server" "instance" {
 
 # Diagnostic setting
 module "ds_mysql_server" {
-  source                          = "github.com/faraday23/terraform-azurerm-monitor-diagnostic-setting.git"
+  source                          = "github.com/openrba/terraform-azurerm-monitor-diagnostic-setting.git"
+  count = var.enable_logs_to_storage ? 1 : 0
   storage_account                 = var.storage_endpoint
   sa_resource_group               = var.storage_account_resource_group
   target_resource_id              = azurerm_mysql_server.instance.id
   target_resource_name            = azurerm_mysql_server.instance.resource_group_name
-  ds_log_api_endpoints            = {"MySqlSlowLogs" = var.mysqlslowlogs, "MySqlAuditLogs" = var.mysqlauditlogs}
   ds_allmetrics_rentention_days   = var.ds_allmetrics_rentention_days
+  ds_log_api_endpoints            = { "MySqlSlowLogs" = var.mysqlslowlogs, 
+  "MySqlAuditLogs" = var.mysqlauditlogs,
+  }
 }
 
 # MySQL Database within a MySQL Server

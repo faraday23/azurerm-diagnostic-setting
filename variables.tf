@@ -1,4 +1,4 @@
-#
+##
 # Required parameters
 ##
 
@@ -58,21 +58,21 @@ variable "administrator_password" {
 }
 
 variable "create_mode" {
-    description = "Can be used to restore or replicate existing servers. Possible values are Default, Replica, GeoRestore, and PointInTimeRestore. Defaults to Default"
-    type        = string
-    default     = "Default"
+  description = "Can be used to restore or replicate existing servers. Possible values are Default, Replica, GeoRestore, and PointInTimeRestore. Defaults to Default"
+  type        = string
+  default     = "Default"
 }
 
 variable "creation_source_server_id" {
-    description = "the source server ID to use. use this only when creating a read replica server"
-    type        = string
-    default     = ""
+  description = "the source server ID to use. use this only when creating a read replica server"
+  type        = string
+  default     = ""
 }
 
 variable "log_retention_days" {
-    description = "Specifies the number of days to keep in the Threat Detection audit logs"
-    type        = number
-    default     = 7
+  description = "Specifies the number of days to keep in the Threat Detection audit logs"
+  type        = number
+  default     = 7
 }
 
 variable "ssl_enforcement_enabled" {
@@ -88,22 +88,22 @@ variable "infrastructure_encryption_enabled" {
 }
 
 variable "auto_grow_enabled" {
-    description = "Enable/Disable auto-growing of the storage."
-    type        = bool
-    default     = false
+  description = "Enable/Disable auto-growing of the storage."
+  type        = bool
+  default     = false
 }
 
 variable "service_endpoints" {
-    description = "Creates a virtual network rule in the subnet_id (values are virtual network subnet ids)."
-    type        = map(string)
-    default     = {}
+  description = "Creates a virtual network rule in the subnet_id (values are virtual network subnet ids)."
+  type        = map(string)
+  default     = {}
 }
 
 variable "access_list" {
-    description = "Access list for MySQL instance. Map off names to cidr ip start/end addresses"
-    type        = map(object({ start_ip_address = string,
+  description = "Access list for MySQL instance. Map off names to cidr ip start/end addresses"
+  type        = map(object({ start_ip_address = string,
                                end_ip_address   = string }))
-    default     = {}
+  default     = {}
 }
 
 variable "enable_mysql_ad_admin" {
@@ -118,27 +118,30 @@ variable "ad_admin_login_name" {
   default     = ""
 }
 
+# Diagnostic settings 
 variable "storage_account_resource_group" {
-    description = "Azure resource group where the storage account resides."
-    type        = string
+  description = "Azure resource group where the storage account resides."
+  type        = string
 }
 
 variable "mysqlslowlogs" {
-    description = "mySqlSlowLogs retention days"
-    type        = number
-    default     = 0
+  description = "Retention only applies to storage account. Retention policy ranges from 1 to 365 days. If you do not want to apply any retention policy and retain data forever, set retention (days) to 0."
+  type        = number
 }
 
 variable "mysqlauditlogs" {
-    description = "mySqlAuditLogs retention days"
-    type        = number
-    default     = 0
+  description = "Retention only applies to storage account. Retention policy ranges from 1 to 365 days. If you do not want to apply any retention policy and retain data forever, set retention (days) to 0."
+  type        = number
 }
 
 variable "ds_allmetrics_rentention_days" {
-    description = "All metrics retention days"
-    type        = number
-    default     = 0
+  description = "Retention only applies to storage account. Retention policy ranges from 1 to 365 days. If you do not want to apply any retention policy and retain data forever, set retention (days) to 0."
+  type        = number
+}
+
+variable "enable_logs_to_storage" {
+  description = "Boolean flag to specify whether the logs should be sent to the Storage Account"
+  type        = bool
 }
 
 ##
@@ -164,15 +167,15 @@ variable "enable_threat_detection_policy" {
 }
 
 variable "storage_endpoint" {
-    description = "This blob storage will hold all Threat Detection audit logs. Required if state is Enabled."
-    type        = string
-    default     = ""
+  description = "This blob storage will hold all Threat Detection audit logs. Required if state is Enabled."
+  type        = string
+  default     = ""
 }
 
 variable "storage_account_access_key" {
-    description = "Specifies the identifier key of the Threat Detection audit storage account. Required if state is Enabled."
-    type        = string
-    default     = ""
+  description = "Specifies the identifier key of the Threat Detection audit storage account. Required if state is Enabled."
+  type        = string
+  default     = ""
 }
 
 ##
@@ -276,42 +279,48 @@ variable "transaction_isolation" {
 }
 
 variable "query_store_capture_interval" {
-    type        = string
-    description = "The query store capture interval in minutes. Allows to specify the interval in which the query metrics are aggregated."
-    default     = "15"
+  type        = string
+  description = "The query store capture interval in minutes. Allows to specify the interval in which the query metrics are aggregated."
+  default     = "15"
 }
 
 variable "query_store_capture_mode" {
-    type        = string
-    description = "The query store capture mode, NONE means do not capture any statements. NOTE: If performance_schema is OFF, turning on query_store_capture_mode will turn on performance_schema and a subset of performance schema instruments required for this feature."
-    default     = "ALL"
+  type        = string
+  description = "The query store capture mode, NONE means do not capture any statements. NOTE: If performance_schema is OFF, turning on query_store_capture_mode will turn on performance_schema and a subset of performance schema instruments required for this feature."
+  default     = "ALL"
 }
 
 variable "query_store_capture_utility_queries" {
-    type        = string
-    description = "Turning ON or OFF to capture all the utility queries that is executing in the system."
-    default     = "YES"
+  type        = string
+  description = "Turning ON or OFF to capture all the utility queries that is executing in the system."
+  default     = "YES"
 }
 
 variable "query_store_retention_period_in_days" {
-    type        = string
-    description = "The query store capture interval in minutes. Allows to specify the interval in which the query metrics are aggregated."
-    default     = "7"
+  type        = string
+  description = "The query store capture interval in minutes. Allows to specify the interval in which the query metrics are aggregated."
+  default     = "7"
 }
 
 variable "query_store_wait_sampling_capture_mode" {
-    type        = string
-    description = "The query store wait event sampling capture mode, NONE means do not capture any wait events."
-    default     = "ALL"
+  type        = string
+  description = "The query store wait event sampling capture mode, NONE means do not capture any wait events."
+  default     = "ALL"
 }
 
 variable "query_store_wait_sampling_frequency" {
-    type        = string
-    description = "The query store wait event sampling frequency in seconds."
-    default     = "30"
+  type        = string
+  description = "The query store wait event sampling frequency in seconds."
+  default     = "30"
 }
 
 variable "mysql_config" {
+  description = "A map of mysql configuration server parameters to values."
+  type        = map(string)
+  default     = {}
+}
+
+variable "additional_config" {
   description = "A map of mysql additional configuration parameters to values."
   type        = map(string)
   default     = {}
@@ -336,7 +345,7 @@ variable "database_defaults" {
 }
 
 locals {
-  mysql_config = merge({
+  mysql_config = merge(merge({
     audit_log_enabled                       = var.audit_log_enabled
     event_scheduler                         = var.create_mode == "Replica" ? "ON" : var.event_scheduler
     innodb_autoinc_lock_mode                = var.innodb_autoinc_lock_mode
@@ -346,7 +355,7 @@ locals {
     performance_schema                      = var.performance_schema
     skip_show_database                      = "OFF"
     slow_query_log                          = var.slow_query_log
-    transaction_isolation                   = var.transaction_isolation
+    transaction_isolation                   = var.transaction_isolation            
     query_store_capture_interval            = var.query_store_capture_interval
     query_store_capture_mode                = var.query_store_capture_mode
     query_store_capture_utility_queries     = var.query_store_capture_utility_queries
@@ -360,7 +369,6 @@ locals {
     max_heap_table_size                     = var.max_heap_table_size
     sort_buffer_size                        = var.sort_buffer_size
     tmp_table_size                          = var.tmp_table_size
-  }))
-
+  })), var.additional_config)
   databases= zipmap(keys(var.databases), [ for database in values(var.databases): merge(var.database_defaults, database) ])
 }
