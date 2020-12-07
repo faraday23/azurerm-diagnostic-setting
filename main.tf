@@ -53,7 +53,7 @@ resource "azurerm_mysql_server" "instance" {
 
 # Diagnostic setting
 module "ds_mysql_server" {
-  source                          = "github.com/openrba/terraform-azurerm-monitor-diagnostic-setting.git"
+  source                          = "github.com/faraday23/terraform-azurerm-monitor-diagnostic-setting.git"
   count = var.enable_logs_to_storage ? 1 : 0
   storage_account                 = var.storage_endpoint
   sa_resource_group               = var.storage_account_resource_group
