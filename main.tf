@@ -18,7 +18,7 @@ resource "random_password" "admin" {
 }
 
 resource "azurerm_mysql_server" "instance" {
-  name                = "${var.names.product_name}-${var.names.environment}-mysql${var.server_id}"
+  name                = "${var.names.product_name}-${var.names.environment}-${var.server_id}"
   location            = var.location
   resource_group_name = var.resource_group_name
   tags = var.tags
